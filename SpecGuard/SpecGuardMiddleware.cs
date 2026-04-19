@@ -31,6 +31,14 @@ internal sealed class SpecGuardMiddleware(
 
         await EnsureInitializedAsync(context);
 
+        // Paths not described in the spec pass through untouched — SpecGuard
+        // only asserts behavior on operations the spec actually declares.
+        if (!IsRequestDescribedInSpec(context.Request))
+        {
+            await next(context);
+            return;
+        }
+
         // Step 1: If the request carries a JSON body, parse it upfront.
         // Malformed JSON is a 400 — we bail out before running any validators.
         if (IsJsonRequest(context.Request))
@@ -78,6 +86,19 @@ internal sealed class SpecGuardMiddleware(
         }
 
         await next(context);
+    }
+
+    private bool IsRequestDescribedInSpec(HttpRequest request)
+    {
+        foreach (var validator in validators)
+        {
+            if (validator.MatchesOperation(request))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsJsonRequest(HttpRequest request)
@@ -178,12 +199,17 @@ internal sealed class SpecGuardMiddleware(
 
     private bool IsSpecRequest(HttpContext context)
     {
-        if (TryGetAbsoluteHttpUri(out _))
-        {
-            return false;
-        }
+        var request = context.Request;
+        var requestPath = request.PathBase.Add(request.Path);
+        var requestUri = new Uri($"{request.Scheme}://{request.Host}{requestPath}");
+        var specUri = ResolveSpecUri(context);
 
-        return string.Equals(context.Request.Path.Value, specUrl, StringComparison.OrdinalIgnoreCase);
+        return Uri.Compare(
+            requestUri,
+            specUri,
+            UriComponents.Scheme | UriComponents.HostAndPort | UriComponents.Path,
+            UriFormat.Unescaped,
+            StringComparison.OrdinalIgnoreCase) == 0;
     }
 
     private bool TryGetAbsoluteHttpUri(out Uri absolute)

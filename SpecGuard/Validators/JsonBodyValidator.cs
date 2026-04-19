@@ -133,6 +133,8 @@ internal class JsonBodyValidator : IRequestValidator
         return true;
     }
 
+    public bool MatchesOperation(HttpRequest request) => ResolveOperation(request) is not null;
+
     public ValueTask<IReadOnlyList<ValidationErrorResult.ValidationError>> ValidateAsync(HttpContext context, CancellationToken cancellationToken)
     {
         var request = context.Request;

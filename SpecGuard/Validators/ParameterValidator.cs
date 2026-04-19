@@ -85,6 +85,8 @@ internal class ParameterValidator : IRequestValidator
     private static readonly IReadOnlyList<ValidationErrorResult.ValidationError> EmptyErrors =
         Array.Empty<ValidationErrorResult.ValidationError>();
 
+    public bool MatchesOperation(HttpRequest request) => ResolveOperation(request) is not null;
+
     public ValueTask<IReadOnlyList<ValidationErrorResult.ValidationError>> ValidateAsync(HttpContext context, CancellationToken cancellationToken)
     {
         var request = context.Request;

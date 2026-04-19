@@ -59,6 +59,31 @@ public class SpecGuardMiddlewareTests
     }
 
     [Fact]
+    public async Task Unmatched_path_passes_through_even_with_malformed_json_body()
+    {
+        var nextCalled = false;
+        RequestDelegate next = _ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        };
+        var validator = MockValidator([], matchesOperation: false);
+        var middleware = BuildMiddleware(next, validator.Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{not valid json"));
+
+        await middleware.InvokeAsync(context);
+
+        Assert.True(nextCalled);
+        Assert.Equal(200, context.Response.StatusCode);
+        validator.Verify(
+            v => v.ValidateAsync(It.IsAny<HttpContext>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task AllValidators_run_and_errors_are_aggregated()
     {
         var firstErrors = new List<ValidationErrorResult.ValidationError>
@@ -197,6 +222,43 @@ public class SpecGuardMiddlewareTests
     }
 
     [Fact]
+    public async Task Spec_request_passes_through_for_relative_spec_url()
+    {
+        var validator = MockValidator([]);
+        var middleware = BuildMiddleware(_ => Task.CompletedTask, validator.Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.Path = new PathString("/openapi/v1.json");
+
+        await middleware.InvokeAsync(context);
+
+        validator.Verify(v => v.Initialize(It.IsAny<JsonDocument>()), Times.Never);
+        validator.Verify(
+            v => v.ValidateAsync(It.IsAny<HttpContext>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Spec_request_passes_through_for_absolute_spec_url_on_same_host()
+    {
+        var validator = MockValidator([]);
+        var middleware = new SpecGuardMiddleware(
+            _ => Task.CompletedTask,
+            [validator.Object],
+            "http://localhost/openapi/v1.json");
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.Path = new PathString("/openapi/v1.json");
+
+        await middleware.InvokeAsync(context);
+
+        validator.Verify(v => v.Initialize(It.IsAny<JsonDocument>()), Times.Never);
+        validator.Verify(
+            v => v.ValidateAsync(It.IsAny<HttpContext>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task Absolute_spec_url_is_used_verbatim()
     {
         var handler = MockHttpHandler("{}");
@@ -254,9 +316,10 @@ public class SpecGuardMiddlewareTests
     private static SpecGuardMiddleware BuildMiddleware(RequestDelegate next, params IRequestValidator[] validators) =>
         new(next, validators, "/openapi/v1.json");
 
-    private static Mock<IRequestValidator> MockValidator(IReadOnlyList<ValidationErrorResult.ValidationError> errors)
+    private static Mock<IRequestValidator> MockValidator(IReadOnlyList<ValidationErrorResult.ValidationError> errors, bool matchesOperation = true)
     {
         var mock = new Mock<IRequestValidator>();
+        mock.Setup(v => v.MatchesOperation(It.IsAny<HttpRequest>())).Returns(matchesOperation);
         mock.Setup(v => v.ValidateAsync(It.IsAny<HttpContext>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(errors);
         return mock;

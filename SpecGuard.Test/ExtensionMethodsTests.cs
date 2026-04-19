@@ -59,6 +59,8 @@ public class ExtensionMethodsTests
         {
         }
 
+        public bool MatchesOperation(HttpRequest request) => false;
+
         public ValueTask<IReadOnlyList<ValidationErrorResult.ValidationError>> ValidateAsync(HttpContext context, CancellationToken cancellationToken)
             => ValueTask.FromResult<IReadOnlyList<ValidationErrorResult.ValidationError>>(Array.Empty<ValidationErrorResult.ValidationError>());
     }
