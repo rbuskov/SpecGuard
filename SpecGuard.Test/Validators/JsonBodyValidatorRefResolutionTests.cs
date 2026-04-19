@@ -305,6 +305,28 @@ public class JsonBodyValidatorRefResolutionTests
         Assert.NotEmpty(await Validate(bodySchema, components, invalid));
     }
 
+    [Fact]
+    public async Task Format_assertion_is_enforced_through_ref()
+    {
+        const string components = """
+            {
+              "Req": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" }
+                }
+              }
+            }
+            """;
+        var bodySchema = """{ "$ref": "#/components/schemas/Req" }""";
+
+        var result = await Validate(bodySchema, components, """{"email":"not-an-email"}""");
+
+        Assert.NotEmpty(result);
+        Assert.Contains(result, e => e.Path == "/email");
+    }
+
     private static async Task<IReadOnlyList<ValidationErrorResult.ValidationError>> Validate(string bodySchemaJson, string componentsSchemasJson, string body)
     {
         var validator = new JsonBodyValidator();

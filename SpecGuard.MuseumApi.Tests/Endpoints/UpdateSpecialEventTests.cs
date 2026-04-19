@@ -56,4 +56,13 @@ public class UpdateSpecialEventTests(MuseumApiFactory factory)
         await AssertSchemaError(response, "eventId");
     }
 
+    [Fact]
+    public async Task Invalid_date_in_dates_array_returns_422()
+    {
+        var response = await client.PatchAsJsonAsync(
+            "/special-events/dad4bce8-f5cb-4078-a211-995864315e39",
+            new { dates = new[] { "not-a-date" } });
+
+        await AssertSchemaError(response, "dates");
+    }
 }

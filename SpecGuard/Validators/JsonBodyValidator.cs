@@ -198,6 +198,7 @@ internal class JsonBodyValidator : IRequestValidator
     private static readonly EvaluationOptions EvaluationOptions = new()
     {
         OutputFormat = OutputFormat.List,
+        RequireFormatValidation = true,
     };
 
     private static ValidationErrorResult.ValidationError[] CollectErrors(EvaluationResults evaluation)

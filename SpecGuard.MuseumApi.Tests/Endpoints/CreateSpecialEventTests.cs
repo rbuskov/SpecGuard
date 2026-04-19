@@ -109,4 +109,18 @@ public class CreateSpecialEventTests(MuseumApiFactory factory)
         await AssertSchemaError(response, "dates");
     }
 
+    [Fact]
+    public async Task Invalid_date_in_dates_array_returns_422()
+    {
+        var response = await client.PostAsJsonAsync("/special-events", new
+        {
+            name = "Test Event",
+            location = "Room 1",
+            eventDescription = "Some event.",
+            dates = new[] { "not-a-date" },
+            price = 10,
+        });
+
+        await AssertSchemaError(response, "dates");
+    }
 }

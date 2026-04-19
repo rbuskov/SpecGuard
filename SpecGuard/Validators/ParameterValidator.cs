@@ -17,6 +17,7 @@ internal class ParameterValidator : IRequestValidator
     private static readonly EvaluationOptions EvaluationOptions = new()
     {
         OutputFormat = OutputFormat.List,
+        RequireFormatValidation = true,
     };
 
     private const string ComponentsParametersPrefix = "#/components/parameters/";
