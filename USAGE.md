@@ -76,12 +76,13 @@ app.UseSpecGuard("https://example/spec"); // Absolute URL
 
 ## 5. Options reference
 
-`SpecGuardOptions` has two properties:
+`SpecGuardOptions` has three properties:
 
 | Option | Default | Effect |
 |---|---|---|
 | `RejectAdditionalProperties` | `false` | When `true`, object schemas in the spec that declare `properties` but omit `additionalProperties` behave as if `additionalProperties: false` were set. Unknown fields in request bodies are rejected. |
 | `AddValidationResponses` | `true` | When `true`, SpecGuard augments the published OpenAPI document with the `400` and `422` responses it can produce. Hand-authored entries at these statuses are never overwritten. |
+| `AllowStringNumerics` | `false` | When `true`, numeric properties in JSON request bodies also accept string-encoded numbers (e.g. `"42"` for an integer field). The published spec keeps `string` alongside the numeric type and retains a number-shape `pattern`. Values sent as strings are validated against the pattern and coerced to their numeric value before `minimum`, `maximum`, `multipleOf`, and format-derived range checks run. |
 
 Example:
 
@@ -90,6 +91,7 @@ services.AddSpecGuard(o =>
 {
     o.RejectAdditionalProperties = true;
     o.AddValidationResponses = false;
+    o.AllowStringNumerics = true;
 });
 ```
 
@@ -130,40 +132,35 @@ derived from the format, so that values outside the CLR range are rejected. An
 explicit `minimum` or `maximum` in the spec is always respected — SpecGuard
 only fills in the format-derived bound on sides that are not already set.
 
-| Type | Format | Minimum | Maximum |
-|---|---|---|---|
-| `byte` | `uint8` | `0` | `255` |
-| `sbyte` | `int8` | `-128` | `127` |
-| `short` | `int16` | `-32768` | `32767` |
-| `ushort` | `uint16` | `0` | `65535` |
-| `int` | `int32` | `-2147483648` | `2147483647` |
-| `uint` | `uint32` | `0` | `4294967295` |
-| `long` | `int64` | `-9223372036854775808` | `9223372036854775807` |
-| `ulong` | `uint64` | `0` | `18446744073709551615` |
-| `Half` | `float16` | `-65504` | `65504` |
-| `float` | `float` | `-3.4028235E+38` | `3.4028235E+38` |
-| `double` | `double` | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
-| `decimal` | `double` | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
+| Type      | Format    | Minimum                    | Maximum                   |
+|-----------|-----------|----------------------------|---------------------------|
+| `byte`    | `uint8`   | `0`                        | `255`                     |
+| `sbyte`   | `int8`    | `-128`                     | `127`                     |
+| `short`   | `int16`   | `-32768`                   | `32767`                   |
+| `ushort`  | `uint16`  | `0`                        | `65535`                   |
+| `int`     | `int32`   | `-2147483648`              | `2147483647`              |
+| `uint`    | `uint32`  | `0`                        | `4294967295`              |
+| `long`    | `int64`   | `-9223372036854775808`     | `9223372036854775807`     |
+| `ulong`   | `uint64`  | `0`                        | `18446744073709551615`    |
+| `Half`    | `float16` | `-65504`                   | `65504`                   |
+| `float`   | `float`   | `-3.4028235E+38`           | `3.4028235E+38`           |
+| `double`  | `double`  | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
+| `decimal` | `double`  | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
 
 ### 7.2 String types
 
-| Type | Published as | Notes                                   |
-|---|---|-----------------------------------------|
-| `Guid` | `{ "type": "string", "format": "uuid" }` |                                         |
-| `DateOnly` | `{ "type": "string", "format": "date" }` |                                         |
-| `TimeOnly` | `{ "type": "string", "format": "time" }` |                                         |
-| `DateTime` | `{ "type": "string", "format": "date-time" }` |                                         |
-| `DateTimeOffset` | `{ "type": "string", "format": "date-time" }` |                                         |
-| `Uri` | `{ "type": "string", "format": "uri" }` |                                         |
-| `byte[]` | `{ "type": "string", "format": "byte" }` | Base64-encoded                          |
-| `TimeSpan` | `{ "type": "string" }` | With default ASP.NET Core regex pattern |
-
-### 7.3 Attributes
-
-| Attribute | Published as | Notes |
-|---|---|---|
-| `[Duration]` on `TimeSpan` | `{ "type": "string", "format": "duration" }` | Serialized as ISO 8601 (e.g. `"PT1H30M"`) |
-| `[EmailAddress]` on `string` | `{ "type": "string", "format": "email" }` | |
+| Type             | Attribute        | Published as                                  | Notes                                     |
+|------------------|------------------|-----------------------------------------------|-------------------------------------------|
+| `Guid`           | -                | `{ "type": "string", "format": "uuid" }`      |                                           |
+| `DateOnly`       | -                | `{ "type": "string", "format": "date" }`      |                                           |
+| `TimeOnly`       | -                | `{ "type": "string", "format": "time" }`      |                                           |
+| `DateTime`       | -                | `{ "type": "string", "format": "date-time" }` |                                           |
+| `DateTimeOffset` | -                | `{ "type": "string", "format": "date-time" }` |                                           |
+| `Uri`            | -                | `{ "type": "string", "format": "uri" }`       |                                           |
+| `byte[]`         | -                | `{ "type": "string", "format": "byte" }`      | Base64-encoded                            |
+| `TimeSpan`       | -                | `{ "type": "string" }`                        | With default ASP.NET Core regex pattern   |
+| `TimeSpan`       | `[Duration]`     | `{ "type": "string", "format": "duration" }`  | Serialized as ISO 8601 (e.g. `"PT1H30M"`) |
+| `string`         | `[EmailAddress]` | `{ "type": "string", "format": "email" }`     |                                           |
 
 ## 8. HTTP behavior
 
@@ -242,9 +239,6 @@ one problem, resubmit, and discover the next one.
 
 ### 9.1 Request body
 
-- The body is validated against
-  `requestBody.content['application/json'].schema` using JSON Schema
-  draft 2020-12 semantics.
 - When `requestBody.required: true` but the body is missing or empty, the
   request is rejected with:
 
@@ -264,19 +258,23 @@ one problem, resubmit, and discover the next one.
   send them.
 - When `RejectAdditionalProperties = true`, object schemas without an explicit
   `additionalProperties` reject unknown fields.
+- When `AllowStringNumerics = true`, integer and number fields also accept
+  string-encoded values. The string must match the number-shape `pattern`
+  published on the schema; the parsed numeric value is then checked against
+  `minimum`, `maximum`, `multipleOf`, and any format-derived range.
 
 ### 9.2 Parameters
 
 - **Required parameters.** Missing required `query`, `header`, or `cookie`
   parameters produce a `Missing required <in> parameter '<name>'` error.
-  Required `path` parameters are not checked; the routing layer returns a
-  `404` before SpecGuard runs.
+  Required `path` parameters are not checked; these will be caught by the 
+  routing layer further down the request pipeline, and 404 will be returned.
 - **Empty query values.** A query parameter whose value is an empty string
   is rejected unless the parameter declares `allowEmptyValue: true`.
 - **Type coercion.** Raw string values are coerced to the declared primitive
   type (`integer`, `number`, `boolean`) before being validated against the
-  schema. Values that fail to coerce are passed through as strings, which
-  then fail schema validation with a descriptive message.
+  schema. Values that fail to coerce fail schema validation with a descriptive 
+  message.
 - **Serialization styles.** The following OpenAPI `style` values are handled:
 
   | Style | Applies to | Behavior |
@@ -320,9 +318,11 @@ one problem, resubmit, and discover the next one.
 When SpecGuard is registered, the document emitted at `/openapi/v1.json`
 differs from stock ASP.NET Core output in these observable ways:
 
-- **Numeric schemas.** Auto-generated regex `pattern` values on numeric
-  schemas are removed, and numeric schemas no longer include `string` in their
-  `type` union.
+- **Numeric schemas.** By default, auto-generated regex `pattern` values on
+  numeric schemas are removed and numeric schemas no longer include `string`
+  in their `type` union. When `AllowStringNumerics = true`, the string
+  alternative and the number-shape `pattern` are retained so the published
+  spec advertises that string-encoded numeric values are accepted.
 - **`sbyte`.** Published with `format: "int8"`.
 - **`Half`.** Published with `format: "float16"`.
 - **`[Duration]` on `TimeSpan`.** Published as

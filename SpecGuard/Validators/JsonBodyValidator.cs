@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Json.Schema;
 using Microsoft.AspNetCore.Http;
 using SpecGuard.Validators.ValidationResults;
@@ -54,14 +55,16 @@ internal class JsonBodyValidator : IRequestValidator
                     continue;
                 }
 
-                var (schema, bodyRequired, readOnlyPaths) = BuildSchema(operationEntry.Value, componentsSchemas, options.RejectAdditionalProperties);
+                var (schema, bodyRequired, readOnlyPaths, rawBodySchema) = BuildSchema(operationEntry.Value, componentsSchemas, options.RejectAdditionalProperties);
 
                 built.Add(new OperationSchema(
                     operationEntry.Name.ToUpperInvariant(),
                     matcher,
                     schema,
                     bodyRequired,
-                    readOnlyPaths));
+                    readOnlyPaths,
+                    rawBodySchema,
+                    componentsSchemas));
             }
         }
 
@@ -69,16 +72,16 @@ internal class JsonBodyValidator : IRequestValidator
         operations = built.ToArray();
     }
 
-    private static (JsonSchema Schema, bool BodyRequired, HashSet<string> ReadOnlyPaths) BuildSchema(JsonElement operationElement, JsonElement? componentsSchemas, bool rejectAdditionalProperties)
+    private static (JsonSchema Schema, bool BodyRequired, HashSet<string> ReadOnlyPaths, JsonElement? RawBodySchema) BuildSchema(JsonElement operationElement, JsonElement? componentsSchemas, bool rejectAdditionalProperties)
     {
         if (!TryGetJsonRequestBodySchema(operationElement, out var bodySchema, out var bodyRequired))
         {
-            return (AcceptAnySchema, false, []);
+            return (AcceptAnySchema, false, [], null);
         }
 
         var built = OpenApiSchemaBuilder.Build(bodySchema, componentsSchemas, rejectAdditionalProperties);
         var readOnlyPaths = ReadOnlyPropertyCollector.Collect(bodySchema, componentsSchemas);
-        return (JsonSchema.FromText(built.ToJsonString()), bodyRequired, readOnlyPaths);
+        return (JsonSchema.FromText(built.ToJsonString()), bodyRequired, readOnlyPaths, bodySchema);
     }
 
     private static JsonElement? TryGetComponentsSchemas(JsonElement root)
@@ -188,13 +191,32 @@ internal class JsonBodyValidator : IRequestValidator
             }
         }
 
-        var evaluation = operation.Schema.Evaluate(body, EvaluationOptions);
-        if (evaluation.IsValid)
+        JsonElement evaluationBody = body;
+        var coercionErrors = new List<ValidationErrorResult.ValidationError>();
+        if (options.AllowStringNumerics && operation.RawBodySchema is { } rawSchema)
         {
-            return ValueTask.FromResult(EmptyErrors);
+            var mutable = JsonNode.Parse(body.GetRawText());
+            mutable = StringNumericCoercer.Coerce(mutable, rawSchema, operation.ComponentsSchemas, coercionErrors);
+            evaluationBody = JsonSerializer.SerializeToElement(mutable);
         }
 
-        return ValueTask.FromResult<IReadOnlyList<ValidationErrorResult.ValidationError>>(CollectErrors(evaluation));
+        var evaluation = operation.Schema.Evaluate(evaluationBody, EvaluationOptions);
+        if (evaluation.IsValid)
+        {
+            return ValueTask.FromResult<IReadOnlyList<ValidationErrorResult.ValidationError>>(
+                coercionErrors.Count > 0 ? coercionErrors.ToArray() : EmptyErrors);
+        }
+
+        var evaluationErrors = CollectErrors(evaluation);
+        if (coercionErrors.Count == 0)
+        {
+            return ValueTask.FromResult<IReadOnlyList<ValidationErrorResult.ValidationError>>(evaluationErrors);
+        }
+
+        var combined = new ValidationErrorResult.ValidationError[coercionErrors.Count + evaluationErrors.Length];
+        coercionErrors.CopyTo(combined);
+        evaluationErrors.CopyTo(combined, coercionErrors.Count);
+        return ValueTask.FromResult<IReadOnlyList<ValidationErrorResult.ValidationError>>(combined);
     }
 
     private static readonly EvaluationOptions EvaluationOptions = new()
@@ -313,5 +335,12 @@ internal class JsonBodyValidator : IRequestValidator
         }
     }
 
-    private sealed record OperationSchema(string Method, RoutePatternMatcher Matcher, JsonSchema Schema, bool BodyRequired, HashSet<string> ReadOnlyPaths);
+    private sealed record OperationSchema(
+        string Method,
+        RoutePatternMatcher Matcher,
+        JsonSchema Schema,
+        bool BodyRequired,
+        HashSet<string> ReadOnlyPaths,
+        JsonElement? RawBodySchema,
+        JsonElement? ComponentsSchemas);
 }

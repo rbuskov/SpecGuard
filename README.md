@@ -50,7 +50,7 @@ Until the first release, reference the project directly from source.
 
 ## Roadmap
 
-- [ ] Make automatic range validation for numeric properties and parameters optional
+- [ ] Ensure path root is always `/` in error messages
 - [ ] More samples (with tests)
 - [ ] First NuGet release
 - [ ] OpenAPI 3.0 support

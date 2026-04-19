@@ -20,4 +20,18 @@ public sealed class SpecGuardOptions
     /// Set to <c>true</c> to suppress this augmentation.
     /// </summary>
     public bool SkipValidationResponses { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, numeric JSON body fields may also be sent as strings
+    /// (e.g. <c>"42"</c> for an integer property). The published spec keeps
+    /// <c>string</c> in the numeric <c>type</c> union and retains the
+    /// auto-generated number-shape regex <c>pattern</c>. Incoming string
+    /// values are validated against the pattern, coerced to their numeric
+    /// value, and then checked against <c>minimum</c>, <c>maximum</c>,
+    /// <c>multipleOf</c>, and <c>format</c> range constraints.
+    ///
+    /// When <c>false</c> (default), numeric schemas are published as pure
+    /// numeric types, so bodies carrying string-encoded numbers are rejected.
+    /// </summary>
+    public bool AllowStringNumerics { get; set; }
 }
