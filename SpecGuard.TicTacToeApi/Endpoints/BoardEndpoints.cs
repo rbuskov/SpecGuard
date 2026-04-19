@@ -17,8 +17,7 @@ public static class BoardEndpoints
         endpoints.MapGet("/board/{row:int}/{column:int}",
                 (int row, int column) => board.Get(row, column))
             .WithName("get-square")
-            .Produces<Mark>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<Mark>(StatusCodes.Status200OK);
 
         endpoints.MapPut("/board/{row:int}/{column:int}",
                 (int row, int column, [FromBody] Mark mark) =>
@@ -33,9 +32,7 @@ public static class BoardEndpoints
                 })
             .WithName("put-square")
             .Accepts<Mark>("application/json")
-            .Produces<BoardStatus>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<BoardStatus>(StatusCodes.Status200OK);
 
         return endpoints;
     }

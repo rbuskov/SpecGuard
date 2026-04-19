@@ -54,9 +54,7 @@ public static class SpecialEventEndpoints
                 return Results.Created($"/special-events/{evt.EventId}", evt);
             })
             .WithName("createSpecialEvent")
-            .Produces<SpecialEventResponse>(StatusCodes.Status201Created)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<SpecialEventResponse>(StatusCodes.Status201Created);
 
         group.MapGet("/", (DateOnly? startDate, DateOnly? endDate, int? page, int? limit) =>
             {
@@ -71,9 +69,7 @@ public static class SpecialEventEndpoints
                 return Results.Ok(items);
             })
             .WithName("listSpecialEvents")
-            .Produces<List<SpecialEventResponse>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<List<SpecialEventResponse>>(StatusCodes.Status200OK);
 
         group.MapGet("/{eventId:guid}", (Guid eventId) =>
                 Events.FirstOrDefault(e => e.EventId == eventId) is { } evt
@@ -81,8 +77,7 @@ public static class SpecialEventEndpoints
                     : Results.NotFound())
             .WithName("getSpecialEvent")
             .Produces<SpecialEventResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPatch("/{eventId:guid}", (Guid eventId, UpdateSpecialEventRequest request) =>
             {
@@ -107,9 +102,7 @@ public static class SpecialEventEndpoints
             })
             .WithName("updateSpecialEvent")
             .Produces<SpecialEventResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{eventId:guid}", (Guid eventId) =>
             {
@@ -124,8 +117,7 @@ public static class SpecialEventEndpoints
             })
             .WithName("deleteSpecialEvent")
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;
     }

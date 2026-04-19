@@ -32,6 +32,11 @@ public static class ExtensionMethods
             o.AddSchemaTransformer<HalfSchemaTransformer>();
             o.AddSchemaTransformer<TimeSpanSchemaTransformer>();
             o.AddSchemaTransformer<EmailAddressSchemaTransformer>();
+
+            if (options.AddValidationResponses)
+            {
+                o.AddOperationTransformer<ValidationResponseTransformer>();
+            }
         });
 
         services.PostConfigureAll<JsonOptions>(o =>

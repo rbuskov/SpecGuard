@@ -40,15 +40,12 @@ public static class TicketEndpoints
                 return Results.Created($"/tickets/{ticketId}", response);
             })
             .WithName("buyMuseumTickets")
-            .Produces<BuyMuseumTicketsResponse>(StatusCodes.Status201Created)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<BuyMuseumTicketsResponse>(StatusCodes.Status201Created);
 
         group.MapGet("/{ticketId:guid}/qr", (Guid ticketId) =>
                 Results.File(QrPlaceholderPng, "image/png"))
             .WithName("getTicketCode")
             .Produces<byte[]>(StatusCodes.Status200OK, "image/png")
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         return endpoints;

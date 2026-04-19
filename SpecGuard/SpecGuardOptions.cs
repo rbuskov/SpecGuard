@@ -10,4 +10,13 @@ public sealed class SpecGuardOptions
     /// allows additional properties).
     /// </summary>
     public bool RejectAdditionalProperties { get; set; }
+
+    /// <summary>
+    /// When <c>true</c> (default), SpecGuard augments each operation's
+    /// <c>responses</c> with the HTTP statuses SpecGuard can produce at runtime
+    /// (<c>400</c> for malformed JSON bodies, <c>422</c> for validation
+    /// failures) — but only on operations that will actually be validated.
+    /// Existing <c>400</c> or <c>422</c> entries are never overwritten.
+    /// </summary>
+    public bool AddValidationResponses { get; set; } = true;
 }

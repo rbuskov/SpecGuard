@@ -41,9 +41,7 @@ public static class MuseumHoursEndpoints
                 return Results.Ok(items);
             })
             .WithName("getMuseumHours")
-            .Produces<List<MuseumDailyHours>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+            .Produces<List<MuseumDailyHours>>(StatusCodes.Status200OK);
 
         return endpoints;
     }
