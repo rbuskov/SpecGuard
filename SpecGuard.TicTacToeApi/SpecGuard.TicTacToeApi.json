@@ -165,8 +165,12 @@
             "$ref": "#/components/schemas/Mark"
           },
           "board": {
+            "maxItems": 3,
+            "minItems": 3,
             "type": "array",
             "items": {
+              "maxItems": 3,
+              "minItems": 3,
               "type": "array",
               "items": {
                 "$ref": "#/components/schemas/Mark"

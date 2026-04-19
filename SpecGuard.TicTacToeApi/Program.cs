@@ -3,11 +3,13 @@ using SpecGuard.TicTacToeApi.Endpoints;
 using SpecGuard.TicTacToeApi.OpenApi;
 using SpecGuard;
 
-//
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi(options => options.AddOperationTransformer<CoordinateRangeTransformer>());
+builder.Services.AddOpenApi(options =>
+{
+    options.AddOperationTransformer<CoordinateRangeTransformer>();
+    options.AddSchemaTransformer<BoardShapeTransformer>();
+});
 builder.Services.AddSpecGuard();
 
 var app = builder.Build();
