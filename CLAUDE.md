@@ -1,5 +1,19 @@
 # SpecGuard
 
+## Keep implementation hidden
+
+Don't bleed out details bout JSON schema validation or other internals. Types 
+and members should be declared internal where possible. Make exposed types sealed
+where possible.
+
+## Test-first Red Green Refactor
+
+When developing new features or fixing bugs in SpecGuard, follow the test-first 
+approach. Start by writing a failing test that captures the desired behavior or 
+the bug you want to fix. Then, implement the necessary code to make the test pass. 
+Finally, refactor the code as needed to improve readability and maintainability 
+while ensuring that all tests still pass.
+
 ## Documentation style
 
 When writing user-facing documentation for SpecGuard, focus on observable

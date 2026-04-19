@@ -53,6 +53,41 @@ public class ExtensionMethodsTests
         Assert.Contains(validators, v => v is JsonBodyValidator);
     }
 
+    [Fact]
+    public void AddSpecGuard_registers_the_options_singleton()
+    {
+        var services = new ServiceCollection();
+
+        services.AddSpecGuard(o =>
+        {
+            o.RejectAdditionalProperties = true;
+            o.AllowStringNumerics = true;
+            o.AddValidationResponses = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<SpecGuardOptions>();
+
+        Assert.True(options.RejectAdditionalProperties);
+        Assert.True(options.AllowStringNumerics);
+        Assert.False(options.AddValidationResponses);
+    }
+
+    [Fact]
+    public void AddSpecGuard_uses_default_options_when_not_configured()
+    {
+        var services = new ServiceCollection();
+
+        services.AddSpecGuard();
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<SpecGuardOptions>();
+
+        Assert.False(options.RejectAdditionalProperties);
+        Assert.False(options.AllowStringNumerics);
+        Assert.True(options.AddValidationResponses);
+    }
+
     private sealed class CustomValidator : IRequestValidator
     {
         public void Initialize(JsonDocument openApiSpec)

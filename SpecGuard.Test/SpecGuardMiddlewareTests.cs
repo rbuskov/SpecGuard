@@ -311,6 +311,93 @@ public class SpecGuardMiddlewareTests
         Assert.Equal(2, callCount);
     }
 
+    [Fact]
+    public async Task Json_body_stream_is_rewound_for_downstream_handler()
+    {
+        const string body = """{"name":"Fido"}""";
+        string? downstreamBody = null;
+        RequestDelegate next = async ctx =>
+        {
+            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
+            downstreamBody = await reader.ReadToEndAsync();
+        };
+        var middleware = BuildMiddleware(next, MockValidator([]).Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal(body, downstreamBody);
+    }
+
+    [Fact]
+    public async Task Large_json_body_is_rewound_for_downstream_handler()
+    {
+        // Exceed the default in-memory buffering threshold (~30 KB) to force
+        // FileBufferingReadStream to spool to disk and still rewind.
+        var payload = new string('x', 64 * 1024);
+        var body = $$"""{"name":"{{payload}}"}""";
+        string? downstreamBody = null;
+        RequestDelegate next = async ctx =>
+        {
+            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
+            downstreamBody = await reader.ReadToEndAsync();
+        };
+        var middleware = BuildMiddleware(next, MockValidator([]).Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal(body, downstreamBody);
+    }
+
+    [Fact]
+    public async Task Non_json_body_is_not_consumed()
+    {
+        const string body = "<xml />";
+        string? downstreamBody = null;
+        RequestDelegate next = async ctx =>
+        {
+            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
+            downstreamBody = await reader.ReadToEndAsync();
+        };
+        var middleware = BuildMiddleware(next, MockValidator([]).Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.ContentType = "application/xml";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal(body, downstreamBody);
+    }
+
+    [Fact]
+    public async Task Unmatched_operation_does_not_consume_body()
+    {
+        const string body = """{"name":"Fido"}""";
+        string? downstreamBody = null;
+        RequestDelegate next = async ctx =>
+        {
+            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
+            downstreamBody = await reader.ReadToEndAsync();
+        };
+        var middleware = BuildMiddleware(next, MockValidator([], matchesOperation: false).Object);
+
+        var context = BuildContext(DefaultHandler);
+        context.Request.ContentType = "application/json";
+        context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal(body, downstreamBody);
+    }
+
     private static readonly HttpMessageHandler DefaultHandler = MockHttpHandler("{}").Object;
 
     private static SpecGuardMiddleware BuildMiddleware(RequestDelegate next, params IRequestValidator[] validators) =>
