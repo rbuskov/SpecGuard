@@ -156,6 +156,26 @@ public class OpenApiSchemaBuilderNumericFormatTests
     }
 
     [Fact]
+    public void Preserves_explicit_minimum_and_maximum_over_format_range()
+    {
+        var schema = Parse($$"""
+            {
+              "type": "object",
+              "properties": {
+                "age": { "type": "integer", "format": "int32", "minimum": 0, "maximum": 150 }
+              }
+            }
+            """);
+
+        var result = OpenApiSchemaBuilder.Build(schema, componentsSchemas: null);
+        var prop = result["properties"]!["age"]!;
+
+        Assert.Null(prop["format"]);
+        Assert.Equal(0, prop["minimum"]!.GetValue<long>());
+        Assert.Equal(150, prop["maximum"]!.GetValue<long>());
+    }
+
+    [Fact]
     public void Strips_non_numeric_openapi_formats_without_adding_constraints()
     {
         var schema = Parse("""

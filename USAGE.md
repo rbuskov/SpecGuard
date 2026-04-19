@@ -121,15 +121,49 @@ matters.
 ## 7. Attributes and type hints
 
 Applying these to your models changes how properties are published in the spec
-(and, by extension, how SpecGuard validates them):
+(and, by extension, how SpecGuard validates them).
 
-| Attribute / type | Published as |
-|---|---|
-| `[OpenApiDuration]` on `TimeSpan` | `{ "type": "string", "format": "duration" }`, serialized as ISO 8601 (e.g. `"PT1H30M"`) |
-| `[EmailAddress]` on `string` | `format: "email"` |
-| `sbyte` | `format: "int8"` |
-| `Half` | `format: "float16"` |
-| All other numeric CLR types (`int`, `long`, `float`, `double`, …) | Matching numeric format, with `minimum` / `maximum` derived from the CLR range |
+### 7.1 Numeric types
+
+For each numeric CLR type, SpecGuard adds `minimum` / `maximum` restrictions
+derived from the format, so that values outside the CLR range are rejected. An 
+explicit `minimum` or `maximum` in the spec is always respected — SpecGuard
+only fills in the format-derived bound on sides that are not already set.
+
+| Type | Format | Minimum | Maximum |
+|---|---|---|---|
+| `byte` | `uint8` | `0` | `255` |
+| `sbyte` | `int8` | `-128` | `127` |
+| `short` | `int16` | `-32768` | `32767` |
+| `ushort` | `uint16` | `0` | `65535` |
+| `int` | `int32` | `-2147483648` | `2147483647` |
+| `uint` | `uint32` | `0` | `4294967295` |
+| `long` | `int64` | `-9223372036854775808` | `9223372036854775807` |
+| `ulong` | `uint64` | `0` | `18446744073709551615` |
+| `Half` | `float16` | `-65504` | `65504` |
+| `float` | `float` | `-3.4028235E+38` | `3.4028235E+38` |
+| `double` | `double` | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
+| `decimal` | `double` | `-1.7976931348623157E+308` | `1.7976931348623157E+308` |
+
+### 7.2 String types
+
+| Type | Published as | Notes                                   |
+|---|---|-----------------------------------------|
+| `Guid` | `{ "type": "string", "format": "uuid" }` |                                         |
+| `DateOnly` | `{ "type": "string", "format": "date" }` |                                         |
+| `TimeOnly` | `{ "type": "string", "format": "time" }` |                                         |
+| `DateTime` | `{ "type": "string", "format": "date-time" }` |                                         |
+| `DateTimeOffset` | `{ "type": "string", "format": "date-time" }` |                                         |
+| `Uri` | `{ "type": "string", "format": "uri" }` |                                         |
+| `byte[]` | `{ "type": "string", "format": "byte" }` | Base64-encoded                          |
+| `TimeSpan` | `{ "type": "string" }` | With default ASP.NET Core regex pattern |
+
+### 7.3 Attributes
+
+| Attribute | Published as | Notes |
+|---|---|---|
+| `[Duration]` on `TimeSpan` | `{ "type": "string", "format": "duration" }` | Serialized as ISO 8601 (e.g. `"PT1H30M"`) |
+| `[EmailAddress]` on `string` | `{ "type": "string", "format": "email" }` | |
 
 ## 8. HTTP behavior
 
@@ -142,8 +176,8 @@ Applying these to your models changes how properties are published in the spec
   including without body parsing, so a malformed JSON body on an unknown URL
   does not produce a 400.
 - **Content type.** Bodies sent with `application/json` or any `*/*+json`
-  media type are parsed and validated. Other content types pass through
-  without body validation.
+  media type are candidates for parsing and validation. Other content types 
+  pass through without body validation.
 - **Parameters.** Path, query, header, and cookie parameters declared on the
   matched operation are validated. Path-level and operation-level parameter
   lists are merged; operation-level entries override path-level entries with
@@ -291,7 +325,7 @@ differs from stock ASP.NET Core output in these observable ways:
   `type` union.
 - **`sbyte`.** Published with `format: "int8"`.
 - **`Half`.** Published with `format: "float16"`.
-- **`[OpenApiDuration]` on `TimeSpan`.** Published as
+- **`[Duration]` on `TimeSpan`.** Published as
   `{ "type": "string", "format": "duration" }`. The auto-generated pattern
   for `TimeSpan` (e.g. `^-?(\d+\.)?\d{2}:\d{2}:\d{2}(\.\d{1,7})?$`) is
   removed.

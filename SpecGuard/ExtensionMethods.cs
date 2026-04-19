@@ -33,7 +33,7 @@ public static class ExtensionMethods
             o.AddSchemaTransformer<TimeSpanSchemaTransformer>();
             o.AddSchemaTransformer<EmailAddressSchemaTransformer>();
 
-            if (options.AddValidationResponses)
+            if (!options.SkipValidationResponses)
             {
                 o.AddOperationTransformer<ValidationResponseTransformer>();
             }

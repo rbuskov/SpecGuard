@@ -50,7 +50,7 @@ Until the first release, reference the project directly from source.
 
 ## Roadmap
 
-- [ ] Automatic range validation for numeric properties and parameters
+- [ ] Make automatic range validation for numeric properties and parameters optional
 - [ ] More samples (with tests)
 - [ ] First NuGet release
 - [ ] OpenAPI 3.0 support

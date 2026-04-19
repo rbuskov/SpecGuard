@@ -9,4 +9,4 @@ namespace SpecGuard.Sanitizers;
 /// <see cref="TimeSpanSchemaTransformer"/> to emit <c>format: "duration"</c> in OpenAPI.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-public sealed class OpenApiDurationAttribute() : JsonConverterAttribute(typeof(TimeSpanConverter));
+public sealed class DurationAttribute() : JsonConverterAttribute(typeof(TimeSpanConverter));

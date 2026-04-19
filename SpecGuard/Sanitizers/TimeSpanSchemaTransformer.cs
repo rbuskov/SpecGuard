@@ -5,7 +5,7 @@ namespace SpecGuard.Sanitizers;
 
 /// <summary>
 /// Registers the ISO 8601 duration schema for TimeSpan properties
-/// decorated with <see cref="OpenApiDurationAttribute"/>.
+/// decorated with <see cref="DurationAttribute"/>.
 /// </summary>
 internal sealed class TimeSpanSchemaTransformer : IOpenApiSchemaTransformer
 {
@@ -16,7 +16,7 @@ internal sealed class TimeSpanSchemaTransformer : IOpenApiSchemaTransformer
     {
         if (context.JsonTypeInfo.Type == typeof(TimeSpan)
             && context.JsonPropertyInfo?.AttributeProvider is { } provider
-            && provider.IsDefined(typeof(OpenApiDurationAttribute), inherit: false))
+            && provider.IsDefined(typeof(DurationAttribute), inherit: false))
         {
             schema.Type = JsonSchemaType.String;
             schema.Format = "duration";
