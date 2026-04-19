@@ -1,0 +1,37 @@
+@HostAddress = http://localhost:5210
+
+### Get the whole board
+
+GET {{HostAddress}}/board
+Accept: application/json
+
+### Get a single square
+
+GET {{HostAddress}}/board/1/1
+Accept: application/json
+
+### Place a mark
+
+PUT {{HostAddress}}/board/1/1
+Content-Type: application/json
+Accept: application/json
+
+"X"
+
+### Invalid mark (fails schema validation)
+
+PUT {{HostAddress}}/board/1/1
+Content-Type: application/json
+Accept: application/json
+
+"Z"
+
+### Out-of-range coordinate (fails schema validation)
+
+PUT {{HostAddress}}/board/5/1
+Content-Type: application/json
+Accept: application/json
+
+"X"
+
+###
