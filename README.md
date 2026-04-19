@@ -43,9 +43,10 @@ Until the first release, reference the project directly from source.
 
 ## Roadmap
 
-- [ ] OpenAPI 3.0 support
+- [ ] Automatic range validation for numeric properties and parameters
 - [ ] More samples (with tests)
 - [ ] First NuGet release
+- [ ] OpenAPI 3.0 support
 
 ## License
 
