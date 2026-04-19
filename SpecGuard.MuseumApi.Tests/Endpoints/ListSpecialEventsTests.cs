@@ -29,4 +29,28 @@ public class ListSpecialEventsTests(MuseumApiFactory factory)
 
         await AssertSchemaError(response, "limit");
     }
+
+    [Fact]
+    public async Task Non_numeric_page_is_rejected()
+    {
+        var response = await client.GetAsync("/special-events?page=abc");
+
+        await AssertSchemaError(response, "page");
+    }
+
+    [Fact]
+    public async Task Invalid_startDate_format_is_rejected()
+    {
+        var response = await client.GetAsync("/special-events?startDate=not-a-date");
+
+        await AssertSchemaError(response, "startDate");
+    }
+
+    [Fact]
+    public async Task Invalid_endDate_format_is_rejected()
+    {
+        var response = await client.GetAsync("/special-events?endDate=not-a-date");
+
+        await AssertSchemaError(response, "endDate");
+    }
 }

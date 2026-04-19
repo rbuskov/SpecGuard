@@ -60,4 +60,29 @@ public class BuyMuseumTicketsTests(MuseumApiFactory factory)
 
         await AssertSchemaError(response);
     }
+
+    [Fact]
+    public async Task Missing_ticketDate_returns_422()
+    {
+        var response = await client.PostAsJsonAsync("/tickets", new
+        {
+            ticketType = "general",
+            email = "visitor@example.com",
+        });
+
+        await AssertSchemaError(response, "ticketDate");
+    }
+
+    [Fact]
+    public async Task Invalid_ticketType_enum_returns_422()
+    {
+        var response = await client.PostAsJsonAsync("/tickets", new
+        {
+            ticketType = "banana",
+            ticketDate = "2023-09-07",
+            email = "visitor@example.com",
+        });
+
+        await AssertSchemaError(response, "ticketType");
+    }
 }

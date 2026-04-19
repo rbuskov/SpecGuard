@@ -45,4 +45,20 @@ public class GetMuseumHoursTests(MuseumApiFactory factory)
 
         await AssertSchemaError(response, "limit");
     }
+
+    [Fact]
+    public async Task Non_numeric_page_is_rejected()
+    {
+        var response = await client.GetAsync("/museum-hours?page=abc");
+
+        await AssertSchemaError(response, "page");
+    }
+
+    [Fact]
+    public async Task Invalid_startDate_format_is_rejected()
+    {
+        var response = await client.GetAsync("/museum-hours?startDate=not-a-date");
+
+        await AssertSchemaError(response, "startDate");
+    }
 }

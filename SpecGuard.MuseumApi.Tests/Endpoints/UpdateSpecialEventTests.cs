@@ -45,4 +45,15 @@ public class UpdateSpecialEventTests(MuseumApiFactory factory)
 
         await AssertSchemaError(response, "price");
     }
+
+    [Fact]
+    public async Task Invalid_uuid_is_rejected()
+    {
+        var response = await client.PatchAsJsonAsync(
+            "/special-events/not-a-uuid",
+            new { location = "Somewhere" });
+
+        await AssertSchemaError(response, "eventId");
+    }
+
 }

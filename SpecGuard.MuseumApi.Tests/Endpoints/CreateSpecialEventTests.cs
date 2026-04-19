@@ -80,4 +80,33 @@ public class CreateSpecialEventTests(MuseumApiFactory factory)
 
         await AssertSchemaError(response, "price");
     }
+
+    [Fact]
+    public async Task Missing_eventDescription_returns_422()
+    {
+        var response = await client.PostAsJsonAsync("/special-events", new
+        {
+            name = "Test Event",
+            location = "Room 1",
+            dates = new[] { "2023-10-29" },
+            price = 10,
+        });
+
+        await AssertSchemaError(response, "eventDescription");
+    }
+
+    [Fact]
+    public async Task Missing_dates_returns_422()
+    {
+        var response = await client.PostAsJsonAsync("/special-events", new
+        {
+            name = "Test Event",
+            location = "Room 1",
+            eventDescription = "Some event.",
+            price = 10,
+        });
+
+        await AssertSchemaError(response, "dates");
+    }
+
 }
