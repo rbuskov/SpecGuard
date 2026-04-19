@@ -313,33 +313,7 @@ one problem, resubmit, and discover the next one.
 - **Ignored OpenAPI-only keywords.** `example`, `xml`, `externalDocs`,
   `deprecated`, and `writeOnly` never cause validation failures.
 
-## 10. Transformations applied to your published OpenAPI document
-
-When SpecGuard is registered, the document emitted at `/openapi/v1.json`
-differs from stock ASP.NET Core output in these observable ways:
-
-- **Numeric schemas.** By default, auto-generated regex `pattern` values on
-  numeric schemas are removed and numeric schemas no longer include `string`
-  in their `type` union. When `AllowStringNumerics = true`, the string
-  alternative and the number-shape `pattern` are retained so the published
-  spec advertises that string-encoded numeric values are accepted.
-- **`sbyte`.** Published with `format: "int8"`.
-- **`Half`.** Published with `format: "float16"`.
-- **`[Duration]` on `TimeSpan`.** Published as
-  `{ "type": "string", "format": "duration" }`. The auto-generated pattern
-  for `TimeSpan` (e.g. `^-?(\d+\.)?\d{2}:\d{2}:\d{2}(\.\d{1,7})?$`) is
-  removed.
-- **`[EmailAddress]` on `string`.** Published with `format: "email"`.
-- **Validation responses (when `AddValidationResponses = true`).**
-  - Every operation with a JSON request body gains a `400` response unless
-    one is already defined.
-  - Every operation with a JSON request body or any parameters gains a `422`
-    response unless one is already defined.
-  - Both responses use `application/problem+json` and document the exact
-    response shape shown in §8.2.
-  - Any hand-authored `400` / `422` entries are left untouched.
-
-## 11. Caveats and limitations
+## 10. Caveats and limitations
 
 - **OpenAPI 3.1 only.** OpenAPI 3.0 is on the roadmap.
 - **Validation is only as correct as your spec.** SpecGuard enforces exactly
@@ -362,7 +336,7 @@ differs from stock ASP.NET Core output in these observable ways:
   field back into a request is rejected. Strip server-owned fields on the
   client before sending.
 
-## 12. Troubleshooting
+## 11. Troubleshooting
 
 - **"The spec isn't loading."** SpecGuard fetches the spec from the URL you
   passed to `UseSpecGuard(...)`. For a relative path it resolves against the
