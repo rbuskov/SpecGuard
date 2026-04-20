@@ -53,14 +53,13 @@ dotnet add package SpecGuard --prerelease
 Or add the package reference directly to your `.csproj`:
 
 ```xml
-<PackageReference Include="SpecGuard" Version="0.9.0-beta.1" />
+<PackageReference Include="SpecGuard" Version="0.9.0-beta.2" />
 ```
 
 SpecGuard targets `net10.0` and depends on ASP.NET Core's built-in OpenAPI stack (`Microsoft.AspNetCore.OpenApi`).
 
 ## Roadmap
 
-- [ ] Ensure path root is always `/` in error messages
 - [ ] Target net8.0 and net9.0
 - [ ] More samples (with tests)
 - [ ] OpenAPI 3.0 support

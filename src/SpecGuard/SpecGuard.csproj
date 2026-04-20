@@ -2,7 +2,7 @@
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>SpecGuard</PackageId>
-        <Version>0.9.0-beta.1</Version>
+        <Version>0.9.0-beta.2</Version>
         <Authors>Rasmus Buskov</Authors>
         <Description>Drop-in ASP.NET Core middleware that validates incoming requests against your OpenAPI specification.</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

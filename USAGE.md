@@ -33,7 +33,7 @@ Or add the package reference to your `.csproj`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="SpecGuard" Version="0.9.0-beta.1" />
+  <PackageReference Include="SpecGuard" Version="0.9.0-beta.2" />
 </ItemGroup>
 ```
 
