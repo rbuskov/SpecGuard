@@ -5,11 +5,11 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/Samples/">
-    <Project Path="SpecGuard.MuseumApi.Tests/SpecGuard.MuseumApi.Tests.csproj" />
-    <Project Path="SpecGuard.MuseumApi/SpecGuard.MuseumApi.csproj" />
-    <Project Path="SpecGuard.TicTacToeApi.Tests/SpecGuard.TicTacToeApi.Tests.csproj" />
-    <Project Path="SpecGuard.TicTacToeApi/SpecGuard.TicTacToeApi.csproj" />
+    <Project Path="src/SpecGuard.MuseumApi.Tests/SpecGuard.MuseumApi.Tests.csproj" />
+    <Project Path="src/SpecGuard.MuseumApi/SpecGuard.MuseumApi.csproj" />
+    <Project Path="src/SpecGuard.TicTacToeApi.Tests/SpecGuard.TicTacToeApi.Tests.csproj" />
+    <Project Path="src/SpecGuard.TicTacToeApi/SpecGuard.TicTacToeApi.csproj" />
   </Folder>
-  <Project Path="SpecGuard.Test/SpecGuard.Test.csproj" />
-  <Project Path="SpecGuard/SpecGuard.csproj" />
+  <Project Path="src/SpecGuard.Test/SpecGuard.Test.csproj" />
+  <Project Path="src/SpecGuard/SpecGuard.csproj" />
 </Solution>

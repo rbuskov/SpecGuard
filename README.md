@@ -39,8 +39,8 @@ and your actual validation logic, and it helps you to create and maintain a good
 
 The solution ships with these sample API projects:
 
-- [`SpecGuard.MuseumApi`](./SpecGuard.MuseumApi) — a rich domain (museum hours, special events, tickets) demonstrating validation across multiple resources.
-- [`SpecGuard.TicTacToeApi`](./SpecGuard.TicTacToeApi) — a small API that models a game of Tic-Tac-Toe.
+- [`SpecGuard.MuseumApi`](./src/SpecGuard.MuseumApi) — a rich domain (museum hours, special events, tickets) demonstrating validation across multiple resources.
+- [`SpecGuard.TicTacToeApi`](./src/SpecGuard.TicTacToeApi) — a small API that models a game of Tic-Tac-Toe.
 
 ## Installation
 
