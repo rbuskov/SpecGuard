@@ -60,8 +60,8 @@ SpecGuard targets `net10.0` and depends on ASP.NET Core's built-in OpenAPI stack
 
 ## Roadmap
 
-- [ ] Target net8.0 and net9.0
 - [ ] More samples (with tests)
+- [ ] Target net8.0 and net9.0
 - [ ] OpenAPI 3.0 support
 
 ## License
