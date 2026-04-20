@@ -47,7 +47,7 @@ public class ValidationResponseShapeTests(MuseumApiFactory factory)
 
         foreach (var error in document.RootElement.GetProperty("errors").EnumerateArray())
         {
-            Assert.Contains(error.GetProperty("in").GetString(), allowed);
+            Assert.Contains(error.GetProperty("in").GetString(), allowed!);
         }
     }
 

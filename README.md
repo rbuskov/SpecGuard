@@ -44,14 +44,24 @@ The solution ships with these sample API projects:
 
 ## Installation
 
-SpecGuard will be published to NuGet when it reaches a stable release.
+SpecGuard is available on [NuGet](https://www.nuget.org/packages/SpecGuard). While in beta, install with the `--prerelease` flag:
 
-Until the first release, reference the project directly from source.
+```bash
+dotnet add package SpecGuard --prerelease
+```
+
+Or add the package reference directly to your `.csproj`:
+
+```xml
+<PackageReference Include="SpecGuard" Version="0.9.0-beta.1" />
+```
+
+SpecGuard targets `net10.0` and depends on ASP.NET Core's built-in OpenAPI stack (`Microsoft.AspNetCore.OpenApi`).
 
 ## Roadmap
 
 - [ ] Ensure path root is always `/` in error messages
-- [ ] src folder
+- [ ] Target net8.0 and net9.0
 - [ ] More samples (with tests)
 - [ ] OpenAPI 3.0 support
 

@@ -22,16 +22,22 @@ For the motivation behind the library, see [README.md](./README.md).
 
 ## 2. Installation
 
-Until the first NuGet release, add a project reference to the `SpecGuard`
-project from source:
+SpecGuard is published on [NuGet](https://www.nuget.org/packages/SpecGuard).
+While the library is in beta, install the prerelease package:
+
+```bash
+dotnet add package SpecGuard --prerelease
+```
+
+Or add the package reference to your `.csproj`:
 
 ```xml
 <ItemGroup>
-  <ProjectReference Include="path/to/SpecGuard/SpecGuard.csproj" />
+  <PackageReference Include="SpecGuard" Version="0.9.0-beta.1" />
 </ItemGroup>
 ```
 
-SpecGuard targets ASP.NET Core's built-in OpenAPI stack
+SpecGuard targets `net10.0` and ASP.NET Core's built-in OpenAPI stack
 (`Microsoft.AspNetCore.OpenApi`). Your host project must call `AddOpenApi()`
 and `MapOpenApi()` so that a spec document is exposed at runtime for SpecGuard
 to consume.

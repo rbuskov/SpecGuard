@@ -7,9 +7,7 @@
         <Description>Drop-in ASP.NET Core middleware that validates incoming requests against your OpenAPI specification.</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/rbuskov/SpecGuard</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/rbuskov/SpecGuard</RepositoryUrl>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <RepositoryUrl>https://github.com/rbuskov/SpecGuard</RepositoryUrl>       
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -25,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="JsonSchema.Net" Version="9.1.4" />
-      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+      <PackageReference Include="JsonSchema.Net" Version="9.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
     </ItemGroup>
 </Project>
