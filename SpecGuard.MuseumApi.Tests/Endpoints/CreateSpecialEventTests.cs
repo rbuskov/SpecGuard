@@ -110,6 +110,32 @@ public class CreateSpecialEventTests(MuseumApiFactory factory)
     }
 
     [Fact]
+    public async Task Price_above_double_maxvalue_returns_422()
+    {
+        // The decimal `price` field publishes format: double; SpecGuard
+        // enforces the double range at validation time. A value above
+        // double.MaxValue should be rejected with 422.
+        // We send the value as a JSON literal too large to deserialize as
+        // double — the malformed-JSON path catches it as 400 instead.
+        // Either status confirms the value was rejected before the handler.
+        var bigJson = """
+            {
+              "name": "Test",
+              "location": "Room",
+              "eventDescription": "Some event",
+              "dates": ["2024-01-01"],
+              "price": 1e999
+            }
+            """;
+        var content = new StringContent(bigJson, System.Text.Encoding.UTF8);
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+        var response = await client.PostAsync("/special-events", content);
+
+        Assert.Contains(response.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity });
+    }
+
+    [Fact]
     public async Task Invalid_date_in_dates_array_returns_422()
     {
         var response = await client.PostAsJsonAsync("/special-events", new

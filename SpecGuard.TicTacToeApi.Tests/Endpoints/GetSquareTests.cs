@@ -43,4 +43,12 @@ public class GetSquareTests(TicTacToeApiFactory factory)
 
         await AssertSchemaError(response, "row");
     }
+
+    [Fact]
+    public async Task Non_integer_column_returns_422()
+    {
+        var response = await client.GetAsync("/board/1/abc");
+
+        await AssertSchemaError(response, "column");
+    }
 }

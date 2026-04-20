@@ -15,11 +15,25 @@ internal sealed class SpecGuardMiddleware(
 {
     internal const string ParsedBodyKey = "SpecGuard.ParsedBody";
     internal const string BodyEmptyKey = "SpecGuard.BodyEmpty";
+    private const string ProblemJsonContentType = "application/problem+json";
 
     private readonly IRequestValidator[] validators = validators.ToArray();
     private readonly Lock specLock = new();
     private Task? initializationTask;
     private JsonDocument? openApiSpec;
+
+    private static async Task WriteProblemJsonAsync(HttpContext context, int status, ProblemDetails details)
+    {
+        context.Response.StatusCode = status;
+        context.Response.ContentType = ProblemJsonContentType;
+
+        var jsonOptions = context.RequestServices
+            .GetService<Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>()
+            ?.Value.SerializerOptions;
+
+        await JsonSerializer.SerializeAsync(
+            context.Response.Body, details, details.GetType(), jsonOptions);
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -47,14 +61,14 @@ internal sealed class SpecGuardMiddleware(
 
             if (parseResult.MalformedMessage is not null)
             {
-                context.Response.StatusCode = 400;
-                await context.Response.WriteAsJsonAsync(new ProblemDetails
+                var details = new ProblemDetails
                 {
                     Type = "https://www.rfc-editor.org/rfc/rfc9110#section-15.5.1",
                     Title = "Malformed JSON",
                     Detail = parseResult.MalformedMessage,
                     Status = 400,
-                });
+                };
+                await WriteProblemJsonAsync(context, 400, details);
                 return;
             }
 
@@ -80,8 +94,7 @@ internal sealed class SpecGuardMiddleware(
         if (allErrors.Count > 0)
         {
             var result = new ValidationErrorResult(allErrors.ToArray());
-            context.Response.StatusCode = 422;
-            await context.Response.WriteAsJsonAsync(result.ProblemDetails);
+            await WriteProblemJsonAsync(context, 422, result.ProblemDetails);
             return;
         }
 

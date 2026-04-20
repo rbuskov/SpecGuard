@@ -70,6 +70,20 @@ public class JsonBodyValidatorTests
     }
 
     [Fact]
+    public async Task Request_to_known_path_with_unknown_method_does_not_match()
+    {
+        var validator = new JsonBodyValidator();
+        validator.Initialize(PetSpec());
+
+        // The spec only declares POST /pet. A GET /pet should NOT match.
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Path = new PathString("/pet");
+
+        Assert.False(validator.MatchesOperation(context.Request));
+    }
+
+    [Fact]
     public async Task Request_with_no_matching_operation_skips_schema_validation()
     {
         var validator = new JsonBodyValidator();

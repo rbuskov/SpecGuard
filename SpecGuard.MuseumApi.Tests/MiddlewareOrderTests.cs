@@ -90,6 +90,67 @@ public class MiddlewareOrderTests
     private sealed class HostBuilder1 : Microsoft.Extensions.Hosting.HostBuilder { }
 
     [Fact]
+    public async Task Auth_before_SpecGuard_short_circuits_anonymous_requests_without_validation()
+    {
+        // Authn/authz before SpecGuard: anonymous request to a protected
+        // endpoint is rejected by auth (401/403), and SpecGuard's body
+        // validation never runs.
+        using var server = await new HostBuilder()
+            .Before(app =>
+            {
+                app.Use(async (ctx, next) =>
+                {
+                    if (ctx.Request.Path.StartsWithSegments("/widgets") &&
+                        !ctx.Request.Headers.ContainsKey("X-Auth"))
+                    {
+                        ctx.Response.StatusCode = 401;
+                        return;
+                    }
+                    await next();
+                });
+            })
+            .MapEndpoints(routes => routes.MapPost("/widgets",
+                (Widget w) => Results.Ok(w)))
+            .StartAsync();
+
+        var client = server.CreateClient();
+        var response = await client.PostAsJsonAsync("/widgets", new { wrong = "field" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Auth_after_SpecGuard_validates_anonymous_requests_and_returns_422()
+    {
+        // Auth after SpecGuard: anonymous request with invalid body is
+        // caught by SpecGuard (422), not by auth. We scope the auth check
+        // to /widgets so the spec-fetch pipeline (which routes through
+        // /openapi/v1.json) isn't blocked.
+        using var server = await new HostBuilder()
+            .After(app =>
+            {
+                app.Use(async (ctx, next) =>
+                {
+                    if (ctx.Request.Path.StartsWithSegments("/widgets") &&
+                        !ctx.Request.Headers.ContainsKey("X-Auth"))
+                    {
+                        ctx.Response.StatusCode = 401;
+                        return;
+                    }
+                    await next();
+                });
+            })
+            .MapEndpoints(routes => routes.MapPost("/widgets",
+                (Widget w) => Results.Ok(w)))
+            .StartAsync();
+
+        var client = server.CreateClient();
+        var response = await client.PostAsJsonAsync("/widgets", new { wrong = "field" });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Exception_handler_after_SpecGuard_does_not_rewrite_the_422()
     {
         using var server = await new HostBuilder()

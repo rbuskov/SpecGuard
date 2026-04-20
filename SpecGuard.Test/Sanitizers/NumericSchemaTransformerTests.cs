@@ -43,6 +43,52 @@ public class NumericSchemaTransformerTests
     }
 
     [Fact]
+    public async Task AllowStringNumerics_preserves_custom_pattern_and_type_union()
+    {
+        var schema = new OpenApiSchema
+        {
+            Type = JsonSchemaType.Integer | JsonSchemaType.String,
+            Pattern = "^CUSTOM$",
+        };
+
+        await new NumericSchemaTransformer(new SpecGuardOptions { AllowStringNumerics = true })
+            .TransformAsync(schema, CreateContext(typeof(int)), CancellationToken.None);
+
+        Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.String, schema.Type);
+        Assert.Equal("^CUSTOM$", schema.Pattern);
+    }
+
+    [Fact]
+    public async Task Custom_pattern_is_preserved_not_stripped()
+    {
+        var schema = new OpenApiSchema
+        {
+            Type = JsonSchemaType.Integer | JsonSchemaType.String,
+            Pattern = "^CUSTOM$",
+        };
+
+        await new NumericSchemaTransformer(new SpecGuardOptions())
+            .TransformAsync(schema, CreateContext(typeof(int)), CancellationToken.None);
+
+        Assert.Equal("^CUSTOM$", schema.Pattern);
+    }
+
+    [Fact]
+    public async Task Integer_number_string_triple_union_strips_only_string()
+    {
+        var schema = new OpenApiSchema
+        {
+            Type = JsonSchemaType.Integer | JsonSchemaType.Number | JsonSchemaType.String,
+            Pattern = GeneratedIntegerPattern,
+        };
+
+        await new NumericSchemaTransformer(new SpecGuardOptions())
+            .TransformAsync(schema, CreateContext(typeof(int)), CancellationToken.None);
+
+        Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.Number, schema.Type);
+    }
+
+    [Fact]
     public async Task Non_numeric_schemas_are_untouched_regardless_of_option()
     {
         var schema = new OpenApiSchema { Type = JsonSchemaType.String };

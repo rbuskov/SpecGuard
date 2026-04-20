@@ -51,8 +51,8 @@ Until the first release, reference the project directly from source.
 ## Roadmap
 
 - [ ] Ensure path root is always `/` in error messages
+- [ ] src folder
 - [ ] More samples (with tests)
-- [ ] First NuGet release
 - [ ] OpenAPI 3.0 support
 
 ## License

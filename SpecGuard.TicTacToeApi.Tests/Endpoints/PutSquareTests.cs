@@ -50,4 +50,38 @@ public class PutSquareTests(TicTacToeApiFactory factory)
 
         await AssertSchemaError(response, "row");
     }
+
+    [Fact]
+    public async Task Column_out_of_range_returns_422()
+    {
+        var response = await client.PutAsync("/board/1/5", JsonContent("\"X\""));
+
+        await AssertSchemaError(response, "column");
+    }
+
+    [Fact]
+    public async Task Valid_X_with_valid_coordinates_returns_200_and_schema_valid_body()
+    {
+        var response = await client.PutAsync("/board/2/3", JsonContent("\"X\""));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = document.RootElement;
+
+        // Schema-valid: winner is a string, board is a 3x3 array of strings.
+        Assert.True(root.TryGetProperty("winner", out var winner));
+        Assert.Equal(JsonValueKind.String, winner.ValueKind);
+
+        var board = root.GetProperty("board");
+        Assert.Equal(3, board.GetArrayLength());
+        foreach (var row in board.EnumerateArray())
+        {
+            Assert.Equal(3, row.GetArrayLength());
+            foreach (var cell in row.EnumerateArray())
+            {
+                Assert.Equal(JsonValueKind.String, cell.ValueKind);
+            }
+        }
+    }
 }

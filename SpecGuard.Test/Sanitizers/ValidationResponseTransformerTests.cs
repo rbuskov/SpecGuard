@@ -159,6 +159,20 @@ public class ValidationResponseTransformerTests
     }
 
     [Fact]
+    public async Task Wildcard_4XX_does_not_prevent_explicit_400_and_422()
+    {
+        var existing = new OpenApiResponse { Description = "any client error" };
+        var operation = OperationWithBody("application/json");
+        operation.Responses = new OpenApiResponses { ["4XX"] = existing };
+
+        await Transform(operation);
+
+        Assert.Same(existing, operation.Responses["4XX"]);
+        Assert.True(operation.Responses.ContainsKey("400"));
+        Assert.True(operation.Responses.ContainsKey("422"));
+    }
+
+    [Fact]
     public async Task Added_400_declares_problem_json_without_errors_array()
     {
         var operation = OperationWithBody("application/json");

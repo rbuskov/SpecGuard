@@ -20,6 +20,20 @@ public class HalfSchemaTransformerTests
     }
 
     [Fact]
+    public async Task Nullable_half_is_not_annotated_format_float16()
+    {
+        // Locks the known limitation: the transformer checks exact type
+        // equality (`typeof(Half)`), so `Half?` is not matched and no
+        // format is emitted.
+        var schema = new OpenApiSchema { Type = JsonSchemaType.Number };
+        var context = CreateContext(typeof(Half?));
+
+        await new HalfSchemaTransformer().TransformAsync(schema, context, CancellationToken.None);
+
+        Assert.Null(schema.Format);
+    }
+
+    [Fact]
     public async Task Does_not_modify_non_half_types()
     {
         var schema = new OpenApiSchema { Type = JsonSchemaType.Number };

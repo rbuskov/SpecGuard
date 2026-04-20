@@ -31,6 +31,62 @@ public class RoutePatternMatcherTests
         Assert.Equal(expected, matcher.IsMatch(path));
     }
 
+    [Theory]
+    [InlineData("/pets/{id}", "/pets/ada%20lovelace", true)]
+    [InlineData("/pets/{id}", "/pets/%E7%8C%AB", true)]
+    public void IsMatch_accepts_url_encoded_path_segments(string pattern, string path, bool expected)
+    {
+        var matcher = new RoutePatternMatcher(pattern);
+
+        Assert.Equal(expected, matcher.IsMatch(path));
+    }
+
+    [Theory]
+    [InlineData("/pets", "/pets/", true)]  // ASP.NET TemplateMatcher tolerates the trailing slash
+    [InlineData("/pets", "/Pets", true)]   // TemplateMatcher is case-insensitive by default
+    public void IsMatch_case_and_trailing_slash_behavior(string pattern, string path, bool expected)
+    {
+        var matcher = new RoutePatternMatcher(pattern);
+
+        Assert.Equal(expected, matcher.IsMatch(path));
+    }
+
+    [Fact]
+    public void IsMatch_accepts_empty_path_for_root_pattern()
+    {
+        var matcher = new RoutePatternMatcher("/");
+
+        Assert.True(matcher.IsMatch("/"));
+    }
+
+    [Fact]
+    public void Equal_literal_count_routes_preserve_order_under_stable_sort()
+    {
+        // Two templates with identical LiteralSegmentCount (both = 3).
+        // The sort key is LiteralSegmentCount; List<T>.Sort is not
+        // guaranteed stable, but both resulting routes still carry the
+        // same count — the tie-breaker is undefined by design.
+        var routes = new List<RoutePatternMatcher>
+        {
+            new("/users/{id}/posts/all"),
+            new("/users/all/posts/{id}"),
+        };
+
+        routes.Sort((a, b) => b.LiteralSegmentCount.CompareTo(a.LiteralSegmentCount));
+
+        Assert.Equal(3, routes[0].LiteralSegmentCount);
+        Assert.Equal(3, routes[1].LiteralSegmentCount);
+    }
+
+    [Fact]
+    public void Catch_all_template_matches_nested_paths()
+    {
+        var matcher = new RoutePatternMatcher("/files/{*path}");
+
+        Assert.True(matcher.IsMatch("/files/a/b/c"));
+        Assert.True(matcher.IsMatch("/files/single"));
+    }
+
     [Fact]
     public void Sorting_by_LiteralSegmentCount_descending_puts_specific_routes_first()
     {

@@ -20,6 +20,20 @@ public class SbyteSchemaTransformerTests
     }
 
     [Fact]
+    public async Task Nullable_sbyte_is_not_annotated_format_int8()
+    {
+        // Locks the known limitation: the transformer checks the exact type
+        // equality (`typeof(sbyte)`), so `sbyte?` (Nullable<sbyte>) is not
+        // matched and no format is emitted.
+        var schema = new OpenApiSchema { Type = JsonSchemaType.Integer };
+        var context = CreateContext(typeof(sbyte?));
+
+        await new SbyteSchemaTransformer().TransformAsync(schema, context, CancellationToken.None);
+
+        Assert.Null(schema.Format);
+    }
+
+    [Fact]
     public async Task Does_not_modify_non_sbyte_types()
     {
         var schema = new OpenApiSchema { Type = JsonSchemaType.Integer };
